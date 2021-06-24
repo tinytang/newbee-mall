@@ -1,7 +1,16 @@
+/**
+ * 严肃声明：
+ * 开源版本请务必保留此注释头信息，若删除我方将保留所有法律责任追究！
+ * 本系统已申请软件著作权，受国家版权局知识产权以及国家计算机软件著作权保护！
+ * 可正常分享和学习源码，不得用于违法犯罪活动，违者必究！
+ * Copyright (c) 2019-2020 十三 all rights reserved.
+ * 版权所有，侵权必究！
+ */
 package ltd.newbee.mall.controller.mall;
 
 import ltd.newbee.mall.common.Constants;
 import ltd.newbee.mall.common.NewBeeMallException;
+import ltd.newbee.mall.common.NewBeeMallOrderStatusEnum;
 import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.controller.vo.NewBeeMallOrderDetailVO;
 import ltd.newbee.mall.controller.vo.NewBeeMallShoppingCartItemVO;
@@ -103,8 +112,14 @@ public class OrderController {
     public String selectPayType(HttpServletRequest request, @RequestParam("orderNo") String orderNo, HttpSession httpSession) {
         NewBeeMallUserVO user = (NewBeeMallUserVO) httpSession.getAttribute(Constants.MALL_USER_SESSION_KEY);
         NewBeeMallOrder newBeeMallOrder = newBeeMallOrderService.getNewBeeMallOrderByOrderNo(orderNo);
-        //todo 判断订单userId
-        //todo 判断订单状态
+        //判断订单userId
+        if (!user.getUserId().equals(newBeeMallOrder.getUserId())) {
+            NewBeeMallException.fail(ServiceResultEnum.NO_PERMISSION_ERROR.getResult());
+        }
+        //判断订单状态
+        if (newBeeMallOrder.getOrderStatus().intValue() != NewBeeMallOrderStatusEnum.ORDER_PRE_PAY.getOrderStatus()) {
+            NewBeeMallException.fail(ServiceResultEnum.ORDER_STATUS_ERROR.getResult());
+        }
         request.setAttribute("orderNo", orderNo);
         request.setAttribute("totalPrice", newBeeMallOrder.getTotalPrice());
         return "mall/pay-select";
@@ -114,8 +129,14 @@ public class OrderController {
     public String payOrder(HttpServletRequest request, @RequestParam("orderNo") String orderNo, HttpSession httpSession, @RequestParam("payType") int payType) {
         NewBeeMallUserVO user = (NewBeeMallUserVO) httpSession.getAttribute(Constants.MALL_USER_SESSION_KEY);
         NewBeeMallOrder newBeeMallOrder = newBeeMallOrderService.getNewBeeMallOrderByOrderNo(orderNo);
-        //todo 判断订单userId
-        //todo 判断订单状态
+        //判断订单userId
+        if (!user.getUserId().equals(newBeeMallOrder.getUserId())) {
+            NewBeeMallException.fail(ServiceResultEnum.NO_PERMISSION_ERROR.getResult());
+        }
+        //判断订单状态
+        if (newBeeMallOrder.getOrderStatus().intValue() != NewBeeMallOrderStatusEnum.ORDER_PRE_PAY.getOrderStatus()) {
+            NewBeeMallException.fail(ServiceResultEnum.ORDER_STATUS_ERROR.getResult());
+        }
         request.setAttribute("orderNo", orderNo);
         request.setAttribute("totalPrice", newBeeMallOrder.getTotalPrice());
         if (payType == 1) {
